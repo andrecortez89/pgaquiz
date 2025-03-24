@@ -1,7 +1,9 @@
 import streamlit as st
 
 # Dados do quiz (pergunta, opcoes, indice da correta, explicacao)
-quiz = [...]  # conteúdo do quiz está completo no canvas
+quiz = [
+    ...  # (mesmo conteúdo das perguntas anteriores, mantido)
+]
 
 st.title("Quiz Interativo - Programa de Gerenciamento de Antimicrobianos (PGA)")
 
@@ -9,6 +11,8 @@ if "pontuacao" not in st.session_state:
     st.session_state.pontuacao = 0
 if "indice" not in st.session_state:
     st.session_state.indice = 0
+if "respostas" not in st.session_state:
+    st.session_state.respostas = {}
 
 indice = st.session_state.indice
 pontuacao = st.session_state.pontuacao
@@ -16,9 +20,10 @@ pontuacao = st.session_state.pontuacao
 if indice < len(quiz):
     q = quiz[indice]
     st.subheader(f"Pergunta {indice + 1}")
-    resposta = st.radio(q["pergunta"], q["opcoes"], key=f"pergunta_{indice}")
+    resposta = st.radio(q["pergunta"], q["opcoes"], key=f"resposta_{indice}")
+    respondeu = st.session_state.respostas.get(indice, False)
 
-    if st.button("Responder"):
+    if not respondeu and st.button("Responder", key=f"botao_{indice}"):
         correta = q["opcoes"][q["correta"]]
         if resposta == correta:
             st.success("✅ Resposta correta!")
@@ -26,6 +31,7 @@ if indice < len(quiz):
         else:
             st.error("❌ Resposta incorreta.")
         st.info(f"Comentário: {q['explicacao']}")
+        st.session_state.respostas[indice] = True
         st.session_state.indice += 1
         st.experimental_rerun()
 else:
@@ -33,4 +39,5 @@ else:
     if st.button("Reiniciar Quiz"):
         st.session_state.indice = 0
         st.session_state.pontuacao = 0
+        st.session_state.respostas = {}
         st.experimental_rerun()
