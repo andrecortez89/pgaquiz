@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocolo de Sepse – Hospital Casa de Saúde</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+:root {
+  --teal-dark:   #1A4558;
+  --teal-mid:    #1E6070;
+  --teal-light:  #2A8CAA;
+  --teal-pale:   #E3F2F7;
+  --red:         #C0392B;
+  --red-pale:    #FDEDEC;
+  --orange:      #D35400;
+  --orange-pale: #FEF0E6;
+  --green:       #1A7A4A;
+  --green-pale:  #E8F8EF;
+  --yellow:      #B7770D;
+  --yellow-pale: #FEF9E7;
+  --gray-dark:   #2C3E50;
+  --gray-mid:    #5D6D7E;
+  --line:        #2A8CAA;
+  --lw:          2px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Source Sans 3', sans-serif; background: #f0f4f6; color: var(--gray-dark); font-size: 13px; }
+.page { width: 297mm; margin: 0 auto; background: #fff; overflow: hidden; }
+
+/* HEADER */
+.hdr { background: var(--teal-dark); padding: 13px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.hdr-logo { display: flex; align-items: center; gap: 10px; }
+.hdr-logo svg { width: 44px; height: 44px; flex-shrink: 0; }
+.hdr-logo-txt { color: #fff; font-family: Montserrat,sans-serif; }
+.hdr-logo-txt .m { font-size: 15px; font-weight: 800; }
+.hdr-logo-txt .s { font-size: 10px; opacity: .85; font-weight: 600; }
+.hdr-title { text-align: center; flex: 1; }
+.hdr-title h1 { font-family: Montserrat,sans-serif; color: #fff; font-size: 20px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+.hdr-title p  { font-family: Montserrat,sans-serif; color: rgba(255,255,255,.75); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; font-weight: 600; }
+.hdr-meta { color: rgba(255,255,255,.75); font-size: 9px; font-family: Montserrat,sans-serif; text-align: right; line-height: 1.9; font-weight: 600; }
+
+/* LEGEND */
+.legend { background: var(--teal-mid); padding: 6px 22px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.leg-item { display: flex; align-items: center; gap: 5px; color: #fff; font-family: Montserrat,sans-serif; font-size: 9px; font-weight: 700; }
+.leg-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+/* BODY */
+.body { display: grid; grid-template-columns: 1fr 82mm; }
+
+/* FLOW */
+.flow { padding: 12px 16px 12px 18px; display: flex; flex-direction: column; align-items: center; border-right: 1px solid #dde6ea; }
+
+/* ── CONNECTORS ── */
+/* Simple vertical line, arrow optional */
+.vl { width: var(--lw); background: var(--line); flex-shrink: 0; align-self: center; position: relative; }
+.vl-arr::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); border-left:5px solid transparent; border-right:5px solid transparent; border-top:7px solid var(--line); }
+.hl { height: var(--lw); background: var(--line); }
+
+/* ── NODES ── */
+.trigger { background: var(--teal-dark); color: #fff; border-radius: 40px; padding: 11px 20px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.trigger .ti { font-size: 17px; }
+.trigger .tl { font-family: Montserrat,sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+
+.sirs-box { background: var(--yellow-pale); border: 2px solid var(--yellow); border-radius: 8px; padding: 9px 12px; width: 100%; }
+.sirs-title { color: var(--yellow); font-family: Montserrat,sans-serif; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; text-align: center; }
+.sirs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+.si { display: flex; align-items: flex-start; gap: 5px; font-size: 10.5px; line-height: 1.45; font-weight: 600; }
+.si::before { content:''; display:block; width:6px; height:6px; border-radius:50%; background:var(--yellow); margin-top:4px; flex-shrink:0; }
+.sirs-note { margin-top: 5px; font-size: 9px; color: var(--yellow); font-style: italic; text-align: center; font-weight: 700; }
+
+/* DIAMOND — built as a rotated square */
+.diamond-wrap { display: flex; justify-content: center; align-items: center; padding: 4px 0; }
+.diamond {
+  background: var(--teal-light);
+  color: #fff;
+  font-family: Montserrat,sans-serif;
+  font-weight: 800;
+  font-size: 11.5px;
+  text-align: center;
+  line-height: 1.4;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+}
+
+/* DECISION SECTION uses a 3-col grid so horizontal lines are reliable */
+.dsec { width: 100%; }
+
+/*
+  Grid structure for the decision row:
+  | col-left (NO) | col-center (diamond) | col-right (empty) |
+  Widths: 100px | auto(1fr) | 100px
+*/
+.d-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 100px 1fr 100px;
+  align-items: center;
+}
+.d-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;  /* align items to the right (toward center) */
+}
+.d-center { display: flex; flex-direction: column; align-items: center; }
+
+/* The horizontal line segments connecting to the diamond sides */
+.d-hline-left  { width: 100%; height: var(--lw); background: var(--line); }
+.d-hline-right { width: 100%; height: var(--lw); background: var(--line); visibility: hidden; }
+
+/* After the diamond row, YES goes down from center */
+.d-yes-row { width: 100%; display: grid; grid-template-columns: 100px 1fr 100px; }
+.d-yes-center { display: flex; flex-direction: column; align-items: center; }
+
+.tag { font-family: Montserrat,sans-serif; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 3px; text-transform: uppercase; }
+.tag-no  { background: var(--red);   color: #fff; }
+.tag-yes { background: var(--green); color: #fff; }
+
+.excl-box { background: var(--green-pale); border: 2px solid var(--green); border-radius: 8px; padding: 7px 9px; text-align: center; width: 96px; }
+
+/* EVAL BOX */
+.eval-box { background: var(--teal-pale); border: 2px solid var(--teal-light); border-radius: 8px; padding: 9px 12px; width: 100%; }
+.eval-title { font-family: Montserrat,sans-serif; font-size: 11.5px; font-weight: 800; color: var(--teal-mid); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px; text-align: center; }
+.eval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 5px; }
+.eval-item { background: #fff; border-radius: 4px; padding: 6px 9px; border-left: 3px solid var(--teal-light); }
+.eval-item .etit { font-weight: 800; color: var(--teal-mid); font-size: 10px; margin-bottom: 3px; }
+.eval-item .ebody { font-size: 9.5px; line-height: 1.45; font-weight: 600; }
+.eval-note { font-size: 9px; color: var(--gray-mid); font-style: italic; text-align: center; font-weight: 600; }
+
+/* THREE-BRANCH */
+/* Top bar spans all 3 outcome columns */
+.tb-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.tb-bar { width: 100%; height: var(--lw); background: var(--line); }
+.tb-cols { width: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; align-items: flex-start; }
+.tbcol { display: flex; flex-direction: column; align-items: center; }
+.tb-drop { width: var(--lw); height: 12px; background: var(--line); }
+.tb-tag { font-family: Montserrat,sans-serif; font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; color: #fff; text-align: center; line-height: 1.35; margin-bottom: 0; }
+
+.oc-box { border-radius: 8px; padding: 9px 11px; width: 100%; }
+.oc-box-g  { background: var(--green-pale);  border: 2px solid var(--green);  }
+.oc-box-o  { background: var(--orange-pale); border: 2px solid var(--orange); }
+.oc-box-r  { background: var(--red-pale);    border: 2px solid var(--red);    }
+.oc-badge { font-family: Montserrat,sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 5px; text-align: center; }
+.bdg-g { color: var(--green); }
+.bdg-o { color: var(--orange); }
+.bdg-r { color: var(--red); }
+.oc-body { font-size: 10px; line-height: 1.5; color: var(--gray-dark); }
+.oc-body b { font-weight: 800; }
+.dest { font-family: Montserrat,sans-serif; font-size: 9.5px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; color: #fff; display: inline-block; margin-top: 5px; }
+
+/* BUNDLE */
+.bundle { background: var(--teal-dark); border-radius: 10px; overflow: hidden; width: 100%; }
+.b-hdr { background: var(--teal-mid); padding: 8px 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.b-badge { background: #fff; color: var(--teal-dark); font-family: Montserrat,sans-serif; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+.b-title { font-family: Montserrat,sans-serif; font-size: 13px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: .4px; }
+.b-body { padding: 9px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.bi { display: flex; align-items: flex-start; gap: 7px; background: rgba(255,255,255,.07); border-radius: 5px; padding: 7px 9px; border-left: 3px solid var(--teal-light); }
+.bi-ico { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.bi-txt { color: #fff; font-size: 10px; line-height: 1.45; }
+.bi-txt b { display: block; font-size: 11px; font-weight: 800; margin-bottom: 3px; }
+
+/* ALERT */
+.alert { background: var(--orange-pale); border: 2px solid var(--orange); border-radius: 6px; padding: 8px 12px; display: flex; align-items: flex-start; gap: 9px; width: 100%; }
+.al-ico { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.al-txt { font-size: 10px; line-height: 1.55; }
+.al-txt b { font-family: Montserrat,sans-serif; font-weight: 800; font-size: 11px; color: var(--orange); display: block; margin-bottom: 3px; }
+
+/* SIDEBAR */
+.sidebar { padding: 11px 13px; display: flex; flex-direction: column; gap: 8px; }
+.sc { border-radius: 8px; overflow: hidden; }
+.sc-hdr { padding: 7px 11px; font-family: Montserrat,sans-serif; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; display: flex; align-items: center; gap: 5px; }
+.sc-body { padding: 8px 11px; font-size: 10px; line-height: 1.5; }
+.sc-q  .sc-hdr { background: var(--teal-mid);  color: #fff; }  .sc-q  .sc-body { background: var(--teal-pale); }
+.sc-rk .sc-hdr { background: var(--orange);    color: #fff; }  .sc-rk .sc-body { background: var(--orange-pale); }
+.sc-dy .sc-hdr { background: var(--red);       color: #fff; }  .sc-dy .sc-body { background: var(--red-pale); }
+.sc-6h .sc-hdr { background: var(--teal-dark); color: #fff; }  .sc-6h .sc-body { background: var(--teal-pale); }
+
+.scr { display: flex; align-items: flex-start; gap: 6px; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,.07); }
+.scr:last-child { border-bottom: none; }
+.scb { width: 19px; height: 19px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; margin-top: 1px; }
+.scr-txt { font-size: 10px; line-height: 1.45; }
+.sc-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 4px; }
+
+/* FOOTER */
+.ftr { background: var(--teal-dark); padding: 7px 22px; display: flex; align-items: center; justify-content: space-between; }
+.ftr-txt { color: rgba(255,255,255,.7); font-size: 9px; font-family: Montserrat,sans-serif; line-height: 1.8; font-weight: 600; }
+
+/* tiny utils */
+.mt4 { margin-top: 4px; }
+.ctr { text-align: center; }
+.i   { font-style: italic; }
+.dim { color: var(--gray-mid); }
+
+@media print {
+  body { background: white; }
+  .page { margin: 0; width: 100%; }
+  @page { size: A3 landscape; margin: 5mm; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══ HEADER ══ -->
+<header class="hdr">
+  <div class="hdr-logo">
+    <svg viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="20" r="20" fill="#1E6070"/>
+      <path d="M20 6C13.4 6 9 11.5 9 18 9 24.5 13 28 20 29 27 28 31 24.5 31 18 31 11.5 26.6 6 20 6Z" fill="none" stroke="white" stroke-width="1.8"/>
+      <path d="M14 21C14 26 16 34 20 36 24 34 26 26 26 21" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="20" cy="17" r="3" fill="white"/>
+    </svg>
+    <div class="hdr-logo-txt">
+      <div class="m">Hospital Casa de Saúde</div>
+      <div class="s">Unidades Santos e Praia Grande</div>
+    </div>
+  </div>
+  <div class="hdr-title">
+    <h1>Protocolo de Sepse</h1>
+    <p>Fluxograma de Identificação, Diagnóstico e Tratamento — Adultos ≥ 15 anos</p>
+  </div>
+  <div class="hdr-meta">
+    <b>SCIH / SCIRAS</b><br>
+    Versão 2024 · Aprovado CCIH<br>
+    Anexo I — POP-SEP-01
+  </div>
+</header>
+
+<!-- ══ LEGEND ══ -->
+<div class="legend">
+  <span style="color:rgba(255,255,255,.55);font-family:Montserrat,sans-serif;font-size:7px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Legenda:</span>
+  <div class="leg-item"><div class="leg-dot" style="background:#1A7A4A"></div>Infecção sem Sepse</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#D35400"></div>Sepse</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#C0392B"></div>Choque Séptico</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#1A4558"></div>Bundle de Tratamento</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#2A8CAA"></div>Avaliação / Decisão</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#B7770D"></div>Alerta / Atenção</div>
+</div>
+
+<!-- ══ BODY ══ -->
+<div class="body">
+
+  <!-- FLOW COLUMN -->
+  <div class="flow">
+
+    <!-- 1. TRIGGER -->
+    <div class="trigger">
+      <span class="ti">🔔</span>
+      <span class="tl">Suspeita de Infecção / Sinais de Alerta</span>
+    </div>
+
+    <div class="vl vl-arr" style="height:16px;"></div>
+
+    <!-- 2. SIRS -->
+    <div class="sirs-box">
+      <div class="sirs-title">⚡ Critérios de SIRS — necessário ≥ 2</div>
+      <div class="sirs-grid">
+        <div class="si">Temperatura <b>&gt;38°C</b> ou <b>&lt;36°C</b></div>
+        <div class="si">FC <b>&gt; 90 bpm</b></div>
+        <div class="si">FR <b>&gt; 20 ipm</b> ou PaCO₂ <b>&lt;32 mmHg</b></div>
+        <div class="si">Leucócitos <b>&gt;12.000</b> ou <b>&lt;4.000</b> ou <b>&gt;10% bastões</b></div>
+      </div>
+      <div class="sirs-note">⚠ Na UTI: usar escore SOFA completo — SIRS não é mandatório</div>
+    </div>
+
+    <div class="vl vl-arr" style="height:16px;"></div>
+
+    <!-- 3. DECISION SECTION -->
+    <div class="dsec">
+
+      <!-- Row 1: the diamond + left/right horizontal connectors -->
+      <div class="d-row">
+
+        <!-- LEFT (NO side): horizontal line going right toward diamond, then drops to box -->
+        <div class="d-left" style="align-items: flex-end;">
+          <div style="display:flex; flex-direction:column; align-items:flex-end; width:100%;">
+            <!-- horizontal line from left edge to right -->
+            <div class="hl" style="width:100%;"></div>
+            <!-- vertical drop -->
+            <div class="vl" style="height:10px; align-self:flex-end; margin-right:0;"></div>
+            <!-- NO tag -->
+            <div style="display:flex; justify-content:flex-end; width:100%;">
+              <span class="tag tag-no">NÃO</span>
+            </div>
+            <!-- vertical drop to excl box -->
+            <div class="vl vl-arr" style="height:10px; align-self:flex-end; margin-right:28px;"></div>
+            <!-- excluded box -->
+            <div class="excl-box">
+              <div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:11px;color:var(--green);margin-bottom:3px;">Excluído</div>
+              <div style="font-size:9px;line-height:1.5;text-align:center;font-weight:600;">Afastar protocolo.<br>Manter vigilância<br>e reavaliação periódica.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER: diamond -->
+        <div class="d-center">
+          <div class="diamond">Foco Infeccioso<br>Suspeito ou<br>Confirmado?</div>
+        </div>
+
+        <!-- RIGHT: hidden mirror for symmetry -->
+        <div>
+          <div class="hl" style="visibility:hidden;"></div>
+        </div>
+
+      </div>
+      <!-- /d-row -->
+
+      <!-- Row 2: YES goes down from center -->
+      <div class="d-yes-row">
+        <div></div><!-- left spacer -->
+        <div class="d-yes-center">
+          <div class="vl" style="height:10px;"></div>
+          <span class="tag tag-yes">SIM  ↓  Continua</span>
+          <div class="vl vl-arr" style="height:10px;"></div>
+        </div>
+        <div></div><!-- right spacer -->
+      </div>
+
+    </div>
+    <!-- /dsec -->
+
+    <!-- 4. MEDICAL EVAL -->
+    <div class="eval-box">
+      <div class="eval-title">🩺 Avaliação Médica — até 10 minutos</div>
+      <div class="eval-grid">
+        <div class="eval-item">
+          <div class="etit">qSOFA (ver tabela lateral)</div>
+          <div class="ebody">≥ 1 critério positivo = maior gravidade. Calcular SOFA completo.</div>
+        </div>
+        <div class="eval-item">
+          <div class="etit">Fatores de Risco (ver tabela lateral)</div>
+          <div class="ebody">Presença reforça abertura imediata do protocolo.</div>
+        </div>
+      </div>
+      <div class="eval-note">Coletar exames do Kit Sepse. Registrar "Tempo Zero" no prontuário e na Ficha do Protocolo.</div>
+    </div>
+
+    <div class="vl vl-arr" style="height:16px;"></div>
+
+    <!-- 5. THREE-WAY BRANCH -->
+    <div class="tb-wrap">
+      <!-- top horizontal bar — spans full width  -->
+      <div class="tb-bar"></div>
+
+      <div class="tb-cols">
+
+        <!-- COL 1: Infecção sem Sepse -->
+        <div class="tbcol">
+          <div class="tb-drop"></div>
+          <div class="tb-tag" style="background:var(--green);">SOFA &lt; 2 pts</div>
+          <div class="vl vl-arr" style="height:10px;"></div>
+          <div class="oc-box oc-box-g">
+            <div class="oc-badge bdg-g">🟢 Infecção<br>sem Sepse</div>
+            <div class="oc-body mt4">
+              <b>Conduta:</b> Antimicrobiano conforme foco e risco. Internação conforme quadro clínico.<br><br>
+              <b>⚠</b> Reavaliar continuamente. Deterioração → reabrir protocolo imediatamente.
+            </div>
+            <div class="ctr"><span class="dest" style="background:var(--green);">Monitorar</span></div>
+          </div>
+        </div>
+
+        <!-- COL 2: Sepse -->
+        <div class="tbcol">
+          <div class="tb-drop"></div>
+          <div class="tb-tag" style="background:var(--orange);">SOFA ≥ 2 pts<br>Disfunção Orgânica</div>
+          <div class="vl vl-arr" style="height:10px;"></div>
+          <div class="oc-box oc-box-o">
+            <div class="oc-badge bdg-o">🟠 SEPSE</div>
+            <div class="oc-body mt4">
+              <b>Bundle 1h imediato.</b> Disfunção orgânica confirmada (SOFA ≥ 2).<br><br>
+              Considerar UTI se deterioração rápida, instabilidade ou sem resposta em 6h.
+            </div>
+            <div class="ctr"><span class="dest" style="background:var(--orange);">Internação / UTI</span></div>
+          </div>
+        </div>
+
+        <!-- COL 3: Choque Séptico -->
+        <div class="tbcol">
+          <div class="tb-drop"></div>
+          <div class="tb-tag" style="background:var(--red);">Vasopressor + Lactato &gt;2 mmol/L</div>
+          <div class="vl vl-arr" style="height:10px;"></div>
+          <div class="oc-box oc-box-r">
+            <div class="oc-badge bdg-r">🔴 CHOQUE<br>SÉPTICO</div>
+            <div class="oc-body mt4">
+              <b>Emergência máxima.</b> Vasopressor (noradrenalina 1ª escolha). PAM alvo ≥ 65 mmHg.<br><br>
+              Mortalidade &gt;40%. Solicitar vaga de UTI imediatamente.
+            </div>
+            <div class="ctr"><span class="dest" style="background:var(--red);">UTI Imediata</span></div>
+          </div>
+        </div>
+
+      </div><!-- /tb-cols -->
+    </div><!-- /tb-wrap -->
+
+    <!-- Arrow from center column down to bundle -->
+    <div style="width:100%; display:grid; grid-template-columns:1fr 1fr 1fr;">
+      <div></div>
+      <div class="d-yes-center">
+        <div class="vl vl-arr" style="height:14px;"></div>
+      </div>
+      <div></div>
+    </div>
+
+    <!-- 6. BUNDLE 1H -->
+    <div class="bundle">
+      <div class="b-hdr">
+        <div class="b-badge">⏱ 1ª HORA</div>
+        <div class="b-title">Bundle de 1 Hora — Sepse e Choque Séptico</div>
+      </div>
+      <div class="b-body">
+        <div class="bi"><span class="bi-ico">🧪</span><div class="bi-txt"><b>Lactato Sérico</b>Coletar na 1ª hora. Se ≥2× normal → nova coleta em até 2h. Meta: clearance ≥10%.</div></div>
+        <div class="bi"><span class="bi-ico">🩸</span><div class="bi-txt"><b>Hemoculturas (antes do ATB)</b>2 pares / 2 sítios distintos. 40 mL total. Técnica asséptica rigorosa.</div></div>
+        <div class="bi"><span class="bi-ico">💊</span><div class="bi-txt"><b>Antimicrobiano em ≤ 1h</b>Conforme guia SCIRAS. Betalactâmicos: infusão estendida 3h. Vancomicina: 2h.</div></div>
+        <div class="bi"><span class="bi-ico">💧</span><div class="bi-txt"><b>Ressuscitação Volêmica</b>30 mL/kg cristaloide se hipotensão ou Lactato ≥2× normal. Avaliar responsividade após.</div></div>
+        <div class="bi"><span class="bi-ico">💉</span><div class="bi-txt"><b>Vasopressor (se PAM &lt;65 pós-volume)</b>Noradrenalina 1ª escolha. Pode iniciar por via periférica até CVC.</div></div>
+        <div class="bi"><span class="bi-ico">📋</span><div class="bi-txt"><b>Kit Sepse — Laboratório</b>Gasometria, hemograma, creatinina, bilirrubinas, coagulograma, Na⁺, K⁺, glicemia.</div></div>
+      </div>
+    </div>
+
+    <div class="vl vl-arr" style="height:12px;"></div>
+
+    <!-- 7. ALERT -->
+    <div class="alert">
+      <span class="al-ico">⚠️</span>
+      <div class="al-txt">
+        <b>Lactato Alterado (≥ 2× limite superior normal) — Ações Obrigatórias</b>
+        Repetir lactato em até <b>2 horas.</b> Clearance &lt;10% = escalar cuidados. | Hb &lt;7 g/dL com hipoperfusão → transfusão. | Glicemia alvo ≤ 180 mg/dL — monitorar a cada 1–2h. | Controle do foco: intervenção cirúrgica/drenagem nas primeiras 6–12h quando indicado.
+      </div>
+    </div>
+
+  </div><!-- /flow -->
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="sc sc-q">
+      <div class="sc-hdr">⚡ qSOFA — Alerta de Gravidade</div>
+      <div class="sc-body">
+        <div class="i dim" style="font-size:8.5px;margin-bottom:4px;">Positivo se ≥ 2 critérios. Não define Sepse — usar fora da UTI como sinalizador de risco.</div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">1</div><div class="scr-txt">FR <b>≥ 22 ipm</b></div></div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">2</div><div class="scr-txt">PAS <b>≤ 100 mmHg</b></div></div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">3</div><div class="scr-txt">Alteração aguda da consciência <b>(Glasgow &lt;15)</b></div></div>
+      </div>
+    </div>
+
+    <div class="sc sc-rk">
+      <div class="sc-hdr">⚠ Fatores de Risco para Sepse</div>
+      <div class="sc-body">
+        <div class="sc-grid2">
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Idade &gt; 65 anos</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Diabetes mellitus</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">DPOC / D. pulmonar</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Insuf. cardíaca</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Insuf. renal crônica</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Insuf. hepática</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Neoplasia ativa</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Transplantado</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Imunossupressão</div></div>
+          <div class="scr"><div class="scb" style="background:var(--orange);font-size:10px;">•</div><div class="scr-txt">Gestação/Puerpério</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc sc-dy">
+      <div class="sc-hdr">🔴 Disfunção Orgânica (SOFA ≥ 2 pts)</div>
+      <div class="sc-body">
+        <div class="scr"><div class="scb" style="background:var(--red);">↓</div><div class="scr-txt">PAS &lt;90 ou PAM &lt;70 mmHg / uso de vasopressor</div></div>
+        <div class="scr"><div class="scb" style="background:var(--red);font-size:6.5px;">O₂</div><div class="scr-txt">SatO₂ &lt;90% aa / PaO₂·FiO₂⁻¹ &lt;300 mmHg</div></div>
+        <div class="scr"><div class="scb" style="background:var(--red);">♦</div><div class="scr-txt">Diurese ausente ≥6h / Creatinina &gt;2,0 mg/dL</div></div>
+        <div class="scr"><div class="scb" style="background:var(--red);font-size:9px;">🧠</div><div class="scr-txt">Glasgow &lt;13 (alteração aguda da consciência)</div></div>
+        <div class="scr"><div class="scb" style="background:var(--red);font-size:9px;">🩸</div><div class="scr-txt">Plaquetas &lt;100.000/µL</div></div>
+        <div class="scr"><div class="scb" style="background:var(--red);">L</div><div class="scr-txt">Lactato &gt;2× limite superior da normalidade</div></div>
+        <div class="scr"><div class="scb" style="background:var(--red);">B</div><div class="scr-txt">Bilirrubina total &gt;2,0 mg/dL</div></div>
+      </div>
+    </div>
+
+    <div class="sc sc-6h">
+      <div class="sc-hdr">🕕 Reavaliação 6h — Choque / Hiperlactatemia</div>
+      <div class="sc-body">
+        <div class="i dim" style="font-size:7.5px;margin-bottom:4px;">Obrigatória em choque séptico, hiperlactatemia ou hipoperfusão.</div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">1</div><div class="scr-txt">Vasopressor: dose mínima para PAM ≥ 65 mmHg</div></div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">2</div><div class="scr-txt">Reavaliação volêmica/perfusional (VPP, PLR, POCUS)</div></div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">3</div><div class="scr-txt">2º Lactato — meta: clearance ≥10%</div></div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">4</div><div class="scr-txt">Hidrocortisona 200 mg/dia se refratário (noradrenalina ≥0,25 mcg/kg/min ≥4h)</div></div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">5</div><div class="scr-txt">Glicemia alvo ≤180 mg/dL — monitorar 1–2h</div></div>
+        <div class="scr"><div class="scb" style="background:var(--teal-mid);">6</div><div class="scr-txt">Registrar reavaliação na Ficha do Protocolo</div></div>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+</div><!-- /body -->
+
+<!-- FOOTER -->
+<footer class="ftr">
+  <div class="ftr-txt">SCIH / SCIRAS — Hospital Casa de Saúde | Santos e Praia Grande<br>Baseado em: Surviving Sepsis Campaign 2021 · ILAS 4ª Ed. · Sepsis-3 (JAMA, 2016)</div>
+  <div style="color:rgba(255,255,255,.25);font-size:20px;">⚕</div>
+  <div class="ftr-txt" style="text-align:right;">Dúvidas: SCIRAS ramal XXXX<br>Interconsulta Infectologia disponível 24h</div>
+</footer>
+
+</div><!-- /page -->
+</body>
+</html>
